@@ -95,6 +95,22 @@ python -m http.server 8000
 ```
 Then navigate to: `http://localhost:8000`
 
+### Option 3: Deploy to Vercel
+This project is a static website and can be deployed directly on Vercel without any build step:
+
+1. Push the project to GitHub.
+2. Import the repository in Vercel.
+3. Keep the root folder as the project root.
+4. Vercel will serve the app automatically using the included `vercel.json` routing configuration.
+
+Example URL patterns after deployment:
+- `/` → `index.html`
+- `/dashboard` → `html/dashboard.html`
+- `/appliances` → `html/appliances.html`
+- `/calculator` → `html/calculator.html`
+- `/analytics` → `html/analytics.html`
+- `/report` → `html/report.html`
+
 ---
 
 ## ☕ How to Run the Java Backend Simulation

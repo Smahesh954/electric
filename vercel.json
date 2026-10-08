@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/dashboard", "dest": "/html/dashboard.html" },
+    { "src": "/appliances", "dest": "/html/appliances.html" },
+    { "src": "/calculator", "dest": "/html/calculator.html" },
+    { "src": "/analytics", "dest": "/html/analytics.html" },
+    { "src": "/report", "dest": "/html/report.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
