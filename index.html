@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WattWise | Smart Home Appliance Power & Energy Monitor</title>
+  <meta name="description" content="Track home appliance power consumption, detect vampire phantom loads, simulate energy savings, and cut electricity bills.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Vampire Load Kill-Switch Alert Banner -->
+  <aside class="vampire-banner-container" aria-label="Vampire Power Alert">
+    <div class="vampire-banner">
+      <div class="vampire-banner-content">
+        <span style="font-size: 1.3rem;">🧛‍♂️</span>
+        <div>
+          <span class="vampire-banner-title">Phantom / Vampire Power Alert:</span>
+          <span>Your home is wasting money on idle appliances in standby. Turn on the Kill Switch to simulate zero idle draw.</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 0.825rem; font-weight: 600;">Simulate Kill Switch:</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="vampire-kill-switch" aria-label="Toggle Vampire Kill Switch">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand-group">
+        <div class="brand-icon-wrapper">⚡</div>
+        <div>
+          <div class="brand-title">WattWise Home</div>
+          <div class="brand-subtitle">Appliance Power & Bill Optimizer</div>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab-btn active" data-tab="dashboard" role="tab">
+          <span>📊</span> Dashboard
+        </button>
+        <button class="nav-tab-btn" data-tab="appliances" role="tab">
+          <span>🔌</span> Appliances
+        </button>
+        <button class="nav-tab-btn" data-tab="calculator" role="tab">
+          <span>💰</span> What-If Savings
+        </button>
+        <button class="nav-tab-btn" data-tab="analytics" role="tab">
+          <span>📈</span> Analytics & Solar
+        </button>
+        <button class="nav-tab-btn" data-tab="report" role="tab">
+          <span>📄</span> Audit Report
+        </button>
+        <button class="nav-tab-btn" data-tab="settings" role="tab">
+          <span>⚙️</span> Tariffs & Settings
+        </button>
+      </nav>
+
+      <!-- Action Controls -->
+      <div class="header-actions">
+        <!-- Preset Profiles -->
+        <select id="preset-select" class="form-control" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.8rem;" aria-label="Load Profile Preset">
+          <option value="" disabled selected>Load Preset Profile...</option>
+          <option value="apartment">🏢 1-BHK Studio</option>
+          <option value="family">🏡 3-BHK Family Home</option>
+          <option value="heavy">⚡ High-Load Smart Villa</option>
+        </select>
+
+        <!-- Dedicated HTML sub-pages quick link dropdown -->
+        <div style="display: inline-block;">
+          <select onchange="if(this.value) window.location.href=this.value;" class="form-control" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.8rem;" title="Explore individual HTML pages in html/ folder">
+            <option value="" selected>📁 HTML Pages ▾</option>
+            <option value="html/dashboard.html">html/dashboard.html</option>
+            <option value="html/appliances.html">html/appliances.html</option>
+            <option value="html/calculator.html">html/calculator.html</option>
+            <option value="html/analytics.html">html/analytics.html</option>
+            <option value="html/report.html">html/report.html</option>
+          </select>
+        </div>
+
+        <!-- Dark / Light Theme Toggle -->
+        <button id="theme-toggle" class="btn-icon" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: DASHBOARD VIEW                     -->
+    <!-- ========================================== -->
+    <section id="tab-view-dashboard" class="tab-view active">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Household Energy Command Center</h1>
+          <p class="section-subtitle">Real-time load telemetry, phantom waste spotter, and monthly bill forecast.</p>
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+          <button id="btn-spike-test" class="btn btn-secondary btn-sm" title="Simulate turning on high-power appliance for 7 seconds">
+            ⚡ Simulate Appliance Spike
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="document.querySelector('[data-tab=appliances]').click()">
+            + Manage Appliances
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards -->
+      <div class="kpi-grid">
+        <!-- Monthly Bill -->
+        <div class="kpi-card kpi-card-highlight">
+          <div class="kpi-header">
+            <span class="kpi-title">Projected Electric Bill</span>
+            <span class="kpi-icon">💵</span>
+          </div>
+          <div class="kpi-value" id="kpi-monthly-bill">$0.00</div>
+          <div class="kpi-subtext" id="kpi-monthly-kwh">0.0 kWh/mo</div>
+        </div>
+
+        <!-- Daily Energy -->
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-title">Daily Consumption</span>
+            <span class="kpi-icon">⚡</span>
+          </div>
+          <div class="kpi-value" id="kpi-daily-kwh">0.00 kWh</div>
+          <div class="kpi-subtext" id="kpi-daily-cost">$0.00 / day</div>
+        </div>
+
+        <!-- Phantom / Vampire Drain -->
+        <div class="kpi-card kpi-card-vampire">
+          <div class="kpi-header">
+            <span class="kpi-title">Phantom Vampire Draw</span>
+            <span class="kpi-icon">🧛‍♂️</span>
+          </div>
+          <div class="kpi-value" id="kpi-vampire-watts" style="color: #c084fc;">0 W</div>
+          <div class="kpi-subtext">
+            <span id="kpi-vampire-cost" style="color: #f43f5e; font-weight: 600;">$0.00/yr</span>
+            <span id="kpi-vampire-pct" class="text-muted">(0% of bill)</span>
+          </div>
+        </div>
+
+        <!-- Energy Efficiency Grade -->
+        <div class="kpi-card kpi-card-grade">
+          <div class="kpi-header">
+            <span class="kpi-title">Efficiency Rating</span>
+            <span class="kpi-icon">🏅</span>
+          </div>
+          <div class="grade-display">
+            <div id="kpi-grade-badge" class="grade-badge-circle" style="background: #10b981;">A</div>
+            <div class="grade-details-col">
+              <span id="kpi-grade-label" class="grade-label">Exceptional</span>
+              <span id="kpi-grade-desc" class="grade-desc">Optimal load balance</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Smart Meter Telemetry Row -->
+      <div class="telemetry-row">
+        <!-- Circular Power Gauge -->
+        <div class="telemetry-card">
+          <div class="telemetry-header">
+            <div class="telemetry-title-group">
+              <h3>Smart Meter Dial</h3>
+              <p>Instantaneous power draw</p>
+            </div>
+            <span id="live-meter-status" class="status-pill status-normal">🟢 Normal Baseline</span>
+          </div>
+          <div class="gauge-box">
+            <canvas id="live-gauge-canvas" width="280" height="180"></canvas>
+          </div>
+          <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+            Connected Total Capacity: <strong id="kpi-connected-load">0 kW</strong> (<span id="kpi-active-appliances">0 active</span>)
+          </div>
+        </div>
+
+        <!-- Real-Time Oscilloscope Streaming Chart -->
+        <div class="telemetry-card">
+          <div class="telemetry-header">
+            <div class="telemetry-title-group">
+              <h3>Live Household Wattage Waveform</h3>
+              <p>Simulating real-time telemetry fluctuations & compressor cycles</p>
+            </div>
+            <div style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: #38bdf8;" id="live-meter-watts">
+              -- W
+            </div>
+          </div>
+          <div class="stream-box">
+            <canvas id="live-power-stream-canvas" width="800" height="200"></canvas>
+            <div class="stream-watermark">1.5s SAMPLE INTERVAL</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Breakdown Row -->
+      <div class="analytics-grid-row">
+        <!-- Donut Chart: Top Power Consumers -->
+        <div class="telemetry-card">
+          <div class="telemetry-header">
+            <div class="telemetry-title-group">
+              <h3>Appliance Energy Share</h3>
+              <p>Monthly kWh distribution</p>
+            </div>
+          </div>
+          <div class="donut-chart-container">
+            <canvas id="dashboard-donut-canvas" width="240" height="240"></canvas>
+          </div>
+        </div>
+
+        <!-- Room Breakdown -->
+        <div class="telemetry-card">
+          <div class="telemetry-header">
+            <div class="telemetry-title-group">
+              <h3>Room-by-Room Consumption</h3>
+              <p>Identify where energy is spent</p>
+            </div>
+          </div>
+          <div id="room-bar-container" style="padding-top: 0.5rem;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Tips Banner -->
+      <div class="section-header" style="margin-top: 2rem;">
+        <div>
+          <h2 class="section-title">Top Savings Recommendations For Your Home</h2>
+          <p class="section-subtitle">Based on your highest consuming appliances and standby draws.</p>
+        </div>
+      </div>
+      <div id="saving-tips-container" class="tips-grid">
+        <!-- Dynamically rendered tips -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: APPLIANCES INVENTORY               -->
+    <!-- ========================================== -->
+    <section id="tab-view-appliances" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Appliance Inventory & Wattage Auditor</h1>
+          <p class="section-subtitle">Add, edit, test wattage ratings, and detect phantom vampire loads.</p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <button id="btn-add-appliance" class="btn btn-primary">
+            <span>➕</span> Add Appliance
+          </button>
+        </div>
+      </div>
+
+      <!-- Room Filter Pills -->
+      <div class="filter-pills-row" id="room-filter-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Appliance Table Card -->
+      <div class="table-card">
+        <div class="table-toolbar">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="appliance-search-input" placeholder="Search appliances by name..." aria-label="Search Appliances">
+          </div>
+          <div style="display: flex; gap: 0.5rem;">
+            <button id="btn-export-csv" class="btn btn-secondary btn-sm" title="Export audit table to Excel CSV">
+              📥 Export CSV
+            </button>
+            <button id="btn-export-json" class="btn btn-secondary btn-sm" title="Download backup JSON">
+              💾 Backup JSON
+            </button>
+            <label class="btn btn-outline btn-sm" style="cursor: pointer;" title="Restore backup JSON">
+              📂 Import JSON
+              <input type="file" id="input-import-json" accept=".json" style="display: none;">
+            </label>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="appliance-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">Status</th>
+                <th>Appliance Name</th>
+                <th>Room</th>
+                <th>Rated Power</th>
+                <th>Standby (Vampire)</th>
+                <th>Usage</th>
+                <th>Est. Monthly Cost</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="appliance-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: WHAT-IF SAVINGS CALCULATOR         -->
+    <!-- ========================================== -->
+    <section id="tab-view-calculator" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">What-If Energy & Bill Savings Simulator</h1>
+          <p class="section-subtitle">Adjust appliance usage habits and immediately visualize dollar savings.</p>
+        </div>
+      </div>
+
+      <div class="whatif-container">
+        <!-- Interactive Sliders & Habits -->
+        <div class="telemetry-card">
+          <h3 style="margin-bottom: 1.25rem;">Adjust Household Usage Scenarios</h3>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Reduce AC / Heating by:</span>
+              <span id="whatif-ac-val" style="color: var(--accent-blue); font-weight: 700;">2 hrs</span>
+            </div>
+            <input type="range" id="whatif-ac-slider" class="range-slider" min="0" max="8" step="0.5" value="2">
+            <p class="text-muted" style="font-size: 0.75rem; margin-top: 0.25rem;">Running AC 2 hours less daily or increasing temperature to 24°C</p>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Reduce Water Heater Run Time by:</span>
+              <span id="whatif-geyser-val" style="color: var(--accent-emerald); font-weight: 700;">0.5 hrs</span>
+            </div>
+            <input type="range" id="whatif-geyser-slider" class="range-slider" min="0" max="3" step="0.5" value="0.5">
+            <p class="text-muted" style="font-size: 0.75rem; margin-top: 0.25rem;">Switch off geyser when not in active use</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+              <input type="checkbox" id="whatif-vampire-check" checked style="width: 18px; height: 18px;">
+              <div>
+                <strong>Eliminate all Standby / Vampire Loads</strong>
+                <div class="text-muted" style="font-size: 0.8rem;">Use smart power strips to cut TVs, consoles, and chargers completely off.</div>
+              </div>
+            </label>
+
+            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+              <input type="checkbox" id="whatif-led-check" checked style="width: 18px; height: 18px;">
+              <div>
+                <strong>Upgrade Remaining Incandescent/CFL to LEDs</strong>
+                <div class="text-muted" style="font-size: 0.8rem;">Save ~60W per fixture across 8 common household lights.</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Simulation Results Card -->
+        <div class="telemetry-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3 style="margin-bottom: 0.5rem;">Projected Savings Potential</h3>
+            <p class="text-muted" style="font-size: 0.85rem; margin-bottom: 1.5rem;">Realized financial return from your simulated habits:</p>
+
+            <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; margin-bottom: 1.5rem;">
+              <span style="font-size: 0.85rem; color: #34d399; font-weight: 600; text-transform: uppercase;">Estimated Monthly Savings</span>
+              <div id="whatif-monthly-savings" style="font-size: 2.4rem; font-weight: 800; color: #10b981; margin: 0.5rem 0;">
+                $0.00 / mo
+              </div>
+              <div id="whatif-annual-savings" style="font-size: 1.1rem; font-weight: 700; color: #f8fafc;">
+                $0.00 / yr saved
+              </div>
+              <div id="whatif-percent-cut" style="display: inline-block; margin-top: 0.5rem; font-size: 0.85rem; background: #10b981; color: #ffffff; padding: 0.2rem 0.6rem; border-radius: var(--radius-full); font-weight: 700;">
+                0% Bill Reduction
+              </div>
+            </div>
+
+            <div id="whatif-new-bill" style="font-size: 0.95rem; font-weight: 600; text-align: center; color: var(--text-muted);">
+              New Bill: $0.00 / mo
+            </div>
+          </div>
+
+          <div style="font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem;">
+            💡 <em>Tip: Families that cut vampire load and adjust thermostat by just 2° typically reduce their yearly utility costs by over $200!</em>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: ANALYTICS & SOLAR SIZING            -->
+    <!-- ========================================== -->
+    <section id="tab-view-analytics" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Deep Energy Analytics & Rooftop Solar Estimator</h1>
+          <p class="section-subtitle">Examine energy distribution and evaluate solar PV system sizing to achieve net-zero power.</p>
+        </div>
+      </div>
+
+      <!-- Solar PV Sizing Card -->
+      <div class="telemetry-card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--bg-card), rgba(245, 158, 11, 0.08)); border-left: 4px solid var(--accent-amber);">
+        <div class="telemetry-header">
+          <div class="telemetry-title-group">
+            <h3>☀️ Rooftop Solar Offset Calculator</h3>
+            <p>Calculated based on your home's total monthly kilowatt-hour consumption</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-top: 1rem;">
+          <div class="report-box">
+            <span class="report-box-title">Recommended System Size</span>
+            <h3 id="solar-system-size" style="color: #fbbf24;">0.0 kW</h3>
+            <p class="text-muted" style="font-size: 0.78rem;">To offset 100% of grid power</p>
+          </div>
+          <div class="report-box">
+            <span class="report-box-title">Estimated Solar Panels</span>
+            <h3 id="solar-panel-count">0 Panels</h3>
+            <p class="text-muted" style="font-size: 0.78rem;">Standard 400W Monocrystalline</p>
+          </div>
+          <div class="report-box">
+            <span class="report-box-title">Annual Grid Savings</span>
+            <h3 id="solar-annual-savings" style="color: #34d399;">$0.00 / yr</h3>
+            <p class="text-muted" style="font-size: 0.78rem;">Avoided utility bills</p>
+          </div>
+          <div class="report-box">
+            <span class="report-box-title">CO₂ Avoided</span>
+            <h3 id="solar-co2-offset" style="color: #38bdf8;">0 kg / yr</h3>
+            <p class="text-muted" style="font-size: 0.78rem;">Clean renewable power</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top 5 Energy Hog Breakdown -->
+      <div class="telemetry-card">
+        <div class="telemetry-header">
+          <div class="telemetry-title-group">
+            <h3>Top Household Energy Consumers</h3>
+            <p>Appliances contributing the greatest percentage to your monthly bill</p>
+          </div>
+        </div>
+        <div id="analytics-top-hogs-container" style="padding-top: 0.5rem;">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 5: PRINTABLE AUDIT REPORT             -->
+    <!-- ========================================== -->
+    <section id="tab-view-report" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Home Energy Audit Report</h1>
+          <p class="section-subtitle">Ready-to-print executive summary for your household energy plan.</p>
+        </div>
+        <button id="btn-print-report" class="btn btn-primary">
+          🖨️ Print / Save as PDF
+        </button>
+      </div>
+
+      <div class="report-paper" id="report-content-container">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- TAB 6: SETTINGS & TARIFF CONFIG            -->
+    <!-- ========================================== -->
+    <section id="tab-view-settings" class="tab-view">
+      <div class="section-header">
+        <div>
+          <h1 class="section-title">Tariff Rates & System Preferences</h1>
+          <p class="section-subtitle">Customize your currency, electric utility billing slab, fixed fees, and taxes.</p>
+        </div>
+        <button id="btn-reset-defaults" class="btn btn-outline btn-sm">
+          🔄 Reset to Defaults
+        </button>
+      </div>
+
+      <div class="telemetry-card" style="max-width: 700px;">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="setting-currency">Currency Symbol</label>
+            <select id="setting-currency" class="form-control">
+              <option value="$">$ (USD / CAD / AUD)</option>
+              <option value="₹">₹ (INR)</option>
+              <option value="€">€ (EUR)</option>
+              <option value="£">£ (GBP)</option>
+              <option value="¥">¥ (JPY / CNY)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-tariff-type">Billing Tariff Structure</label>
+            <select id="setting-tariff-type" class="form-control">
+              <option value="flat">Flat Rate (Single price per kWh)</option>
+              <option value="tiered">3-Tier Slabs (Base, Mid, Peak)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label" for="setting-flat-rate">Flat Rate (Cost per kWh)</label>
+            <input type="number" step="0.01" id="setting-flat-rate" class="form-control" value="0.16">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="setting-fixed-fee">Monthly Base Supply Fee</label>
+            <input type="number" step="0.5" id="setting-fixed-fee" class="form-control" value="12.00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="setting-tax">Energy Tax & Surcharges (%)</label>
+          <input type="number" step="0.5" id="setting-tax" class="form-control" value="5.0">
+        </div>
+
+        <!-- Tiered group (toggled) -->
+        <div id="tiered-settings-group" style="display: none; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 0.75rem; font-size: 0.9rem;">Multi-Tier Tariff Slabs</h4>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Tier 1 Limit (kWh)</label>
+              <input type="number" id="setting-tier1-limit" class="form-control" value="150">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tier 1 Rate ($/kWh)</label>
+              <input type="number" step="0.01" id="setting-tier1-rate" class="form-control" value="0.12">
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Tier 2 Limit (kWh)</label>
+              <input type="number" id="setting-tier2-limit" class="form-control" value="350">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tier 2 Rate ($/kWh)</label>
+              <input type="number" step="0.01" id="setting-tier2-rate" class="form-control" value="0.18">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tier 3 (> Tier 2 Limit) Rate ($/kWh)</label>
+            <input type="number" step="0.01" id="setting-tier3-rate" class="form-control" value="0.26">
+          </div>
+        </div>
+
+        <button id="btn-save-settings" class="btn btn-primary" style="margin-top: 0.5rem;">
+          💾 Save Preferences
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add / Edit Appliance Modal -->
+  <div class="modal-backdrop" id="appliance-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">Add Appliance</h3>
+        <button class="btn-icon" id="modal-close-btn" aria-label="Close dialog">✕</button>
+      </div>
+      <form id="appliance-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="input-app-name">Appliance Name *</label>
+            <input type="text" id="input-app-name" class="form-control" placeholder="e.g. Master Bedroom Inverter AC" required>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="input-app-room">Room Location *</label>
+              <select id="input-app-room" class="form-control" required>
+                <option value="living">🛋️ Living Room</option>
+                <option value="kitchen">🍳 Kitchen</option>
+                <option value="bedroom">🛏️ Bedroom</option>
+                <option value="office">💻 Home Office</option>
+                <option value="laundry">🧺 Laundry / Utility</option>
+                <option value="climate">❄️ HVAC / Climate</option>
+                <option value="other">💡 Other / Outdoor</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-app-qty">Quantity</label>
+              <input type="number" id="input-app-qty" class="form-control" min="1" max="50" value="1" required>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="input-app-watts">Active Power Rating (Watts) *</label>
+              <input type="number" id="input-app-watts" class="form-control" min="1" max="15000" placeholder="e.g. 1400" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-app-standby">Standby / Vampire Draw (Watts)</label>
+              <input type="number" id="input-app-standby" class="form-control" min="0" max="100" value="0" placeholder="e.g. 5">
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label" for="input-app-hours">Active Hours Per Day (0 - 24) *</label>
+              <input type="number" step="0.1" id="input-app-hours" class="form-control" min="0" max="24" placeholder="e.g. 6.5" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-app-rating">Energy Star Rating (1 - 5)</label>
+              <select id="input-app-rating" class="form-control">
+                <option value="5">⭐⭐⭐⭐⭐ (5-Star / Inverter)</option>
+                <option value="4">⭐⭐⭐⭐ (4-Star)</option>
+                <option value="3" selected>⭐⭐⭐ (3-Star Standard)</option>
+                <option value="2">⭐⭐ (2-Star Older)</option>
+                <option value="1">⭐ (1-Star Low Efficiency)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="input-app-desc">Notes / Description</label>
+            <input type="text" id="input-app-desc" class="form-control" placeholder="Optional notes (e.g. bought in 2023)">
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modal-save-btn">Save Appliance</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div>
+        <strong>WattWise Home</strong> — Helping families track power, uncover phantom loads, and cut electricity costs.
+      </div>
+      <div class="footer-links">
+        <a href="html/dashboard.html">Dashboard View</a>
+        <a href="html/appliances.html">Appliances View</a>
+        <a href="html/calculator.html">Savings Simulator</a>
+        <a href="html/analytics.html">Solar Sizing</a>
+        <a href="html/report.html">Audit Report</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

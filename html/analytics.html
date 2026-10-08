@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WattWise | Energy Analytics & Solar Estimator</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/analytics.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-group">
+        <div class="brand-icon-wrapper">📈</div>
+        <div>
+          <div class="brand-title">WattWise Home</div>
+          <div class="brand-subtitle">Analytics & Solar Sizing</div>
+        </div>
+      </a>
+
+      <nav class="nav-tabs" role="tablist">
+        <a href="dashboard.html" class="nav-tab-btn"><span>📊</span> Dashboard</a>
+        <a href="appliances.html" class="nav-tab-btn"><span>🔌</span> Appliances</a>
+        <a href="calculator.html" class="nav-tab-btn"><span>💰</span> What-If Savings</a>
+        <a href="analytics.html" class="nav-tab-btn active"><span>📈</span> Analytics & Solar</a>
+        <a href="report.html" class="nav-tab-btn"><span>📄</span> Audit Report</a>
+      </nav>
+
+      <div class="header-actions">
+        <select id="preset-select" class="form-control analytics-preset-select">
+          <option value="" disabled selected>Preset Profiles...</option>
+          <option value="apartment">🏢 1-BHK Studio</option>
+          <option value="family">🏡 3-BHK Family Home</option>
+          <option value="heavy">⚡ High-Load Villa</option>
+        </select>
+        <button id="theme-toggle" class="btn-icon" title="Toggle Dark/Light Mode">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <div class="section-header">
+      <div>
+        <h1 class="section-title">Deep Energy Analytics & Rooftop Solar Estimator</h1>
+        <p class="section-subtitle">Examine energy distribution and evaluate solar PV system sizing to achieve net-zero power.</p>
+      </div>
+    </div>
+
+    <!-- Solar PV Sizing Card -->
+    <div class="telemetry-card solar-card">
+      <div class="telemetry-header">
+        <div class="telemetry-title-group">
+          <h3>☀️ Rooftop Solar Offset Calculator</h3>
+          <p>Calculated based on your home's total monthly kilowatt-hour consumption</p>
+        </div>
+      </div>
+
+      <div class="solar-metrics-grid">
+        <div class="report-box">
+          <span class="report-box-title">Recommended System Size</span>
+          <h3 id="solar-system-size" class="solar-system-size">0.0 kW</h3>
+          <p class="text-muted solar-metric-description">To offset 100% of grid power</p>
+        </div>
+        <div class="report-box">
+          <span class="report-box-title">Estimated Solar Panels</span>
+          <h3 id="solar-panel-count">0 Panels</h3>
+          <p class="text-muted solar-metric-description">Standard 400W Monocrystalline</p>
+        </div>
+        <div class="report-box">
+          <span class="report-box-title">Annual Grid Savings</span>
+          <h3 id="solar-annual-savings" class="solar-annual-savings">$0.00 / yr</h3>
+          <p class="text-muted solar-metric-description">Avoided utility bills</p>
+        </div>
+        <div class="report-box">
+          <span class="report-box-title">CO₂ Avoided</span>
+          <h3 id="solar-co2-offset" class="solar-co2-offset">0 kg / yr</h3>
+          <p class="text-muted solar-metric-description">Clean renewable power</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top 5 Energy Hog Breakdown -->
+    <div class="telemetry-card">
+      <div class="telemetry-header">
+        <div class="telemetry-title-group">
+          <h3>Top Household Energy Consumers</h3>
+          <p>Appliances contributing the greatest percentage to your monthly bill</p>
+        </div>
+      </div>
+      <div id="analytics-top-hogs-container" class="analytics-top-hogs">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div><strong>WattWise Home</strong> — Power & Appliance Monitor</div>
+      <div class="footer-links">
+        <a href="../index.html">Main App</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="appliances.html">Appliances</a>
+        <a href="calculator.html">What-If Calculator</a>
+        <a href="report.html">Print Report</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/calculator.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/simulator.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/analytics.js"></script>
+</body>
+</html>

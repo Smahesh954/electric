@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WattWise | Household Energy Audit Report</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-group">
+        <div class="brand-icon-wrapper">📄</div>
+        <div>
+          <div class="brand-title">WattWise Home</div>
+          <div class="brand-subtitle">Energy Audit Report</div>
+        </div>
+      </a>
+
+      <nav class="nav-tabs" role="tablist">
+        <a href="dashboard.html" class="nav-tab-btn"><span>📊</span> Dashboard</a>
+        <a href="appliances.html" class="nav-tab-btn"><span>🔌</span> Appliances</a>
+        <a href="calculator.html" class="nav-tab-btn"><span>💰</span> What-If Savings</a>
+        <a href="analytics.html" class="nav-tab-btn"><span>📈</span> Analytics & Solar</a>
+        <a href="report.html" class="nav-tab-btn active"><span>📄</span> Audit Report</a>
+      </nav>
+
+      <div class="header-actions">
+        <button id="theme-toggle" class="btn-icon" title="Toggle Dark/Light Mode">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <div class="section-header">
+      <div>
+        <h1 class="section-title">Home Energy Audit & Action Plan</h1>
+        <p class="section-subtitle">Complete executive report ready to save or print.</p>
+      </div>
+      <button class="btn btn-primary" onclick="window.print()">
+        🖨️ Print / Save PDF
+      </button>
+    </div>
+
+    <div class="report-paper" id="report-content-container">
+      <!-- Dynamically generated report -->
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div><strong>WattWise Home</strong> — Power & Appliance Monitor</div>
+      <div class="footer-links">
+        <a href="../index.html">Main App</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="appliances.html">Appliances</a>
+        <a href="calculator.html">What-If Calculator</a>
+        <a href="analytics.html">Solar Sizing</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/calculator.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/simulator.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const appliances = StorageManager.getAppliances();
+        const settings = StorageManager.getSettings();
+        const audit = EnergyCalculator.computeHouseholdAudit(appliances, settings);
+        const curr = settings.currency;
+        const container = document.getElementById('report-content-container');
+        if (!container) return;
+
+        container.innerHTML = `
+          <div class="report-header">
+            <h2>🏠 Household Energy Efficiency Audit & Cost Analysis</h2>
+            <p class="text-muted">Generated: ${new Date().toLocaleDateString()} | Active Appliances: ${audit.activeApplianceCount} | Monthly Load: ${audit.totalMonthlyKwh.toFixed(1)} kWh</p>
+          </div>
+
+          <div class="report-summary-boxes">
+            <div class="report-box">
+              <span class="report-box-title">Efficiency Rating</span>
+              <h3 style="color: ${audit.grade.color};">${audit.grade.letter} - ${audit.grade.label}</h3>
+              <p>${audit.grade.desc}</p>
+            </div>
+            <div class="report-box">
+              <span class="report-box-title">Projected Electric Bill</span>
+              <h3>${curr}${audit.totalMonthlyCost.toFixed(2)} / month</h3>
+              <p>${curr}${audit.totalAnnualCost.toFixed(2)} annualized</p>
+            </div>
+            <div class="report-box">
+              <span class="report-box-title">Phantom Vampire Waste</span>
+              <h3 class="text-danger">${curr}${audit.annualVampireCost.toFixed(2)} / year</h3>
+              <p>${audit.vampirePercentage.toFixed(1)}% of bill spent on idle devices</p>
+            </div>
+          </div>
+
+          <div class="report-section">
+            <h3>Top 5 Energy Consumers</h3>
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Appliance</th>
+                  <th>Monthly kWh</th>
+                  <th>Share of Bill</th>
+                  <th>Estimated Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${audit.topHogs.map(h => `
+                  <tr>
+                    <td><strong>${h.name}</strong></td>
+                    <td>${h.monthlyKwh.toFixed(1)} kWh</td>
+                    <td>${h.percentageOfTotal.toFixed(1)}%</td>
+                    <td>${curr}${h.monthlyCost.toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="report-section">
+            <h3>Household Action Checklist to Slash Utility Bills</h3>
+            <ul class="report-checklist">
+              <li>
+                <strong>Cut Standby Vampire Loads:</strong> Install smart power strips for entertainment center and computers. Immediate savings: <em>${curr}${audit.annualVampireCost.toFixed(2)}/year</em>.
+              </li>
+              <li>
+                <strong>HVAC Thermostat Calibration:</strong> Running AC at 24°C instead of 20°C reduces compressor work by ~20%, saving an estimated <em>${curr}${(audit.totalMonthlyCost * 0.18).toFixed(2)}/month</em>.
+              </li>
+              <li>
+                <strong>Water Heater Timing:</strong> Use water geyser only 45 minutes before use rather than continuous reheat, saving <em>~${curr}${(audit.totalMonthlyCost * 0.12).toFixed(2)}/month</em>.
+              </li>
+              <li>
+                <strong>Clean Refrigerator Coils:</strong> Improve compressor efficiency by 15-25% with simple vacuuming.
+              </li>
+            </ul>
+          </div>
+        `;
+      }, 100);
+    });
+  </script>
+</body>
+</html>

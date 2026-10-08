@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WattWise | Household Power Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/dashboard.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Vampire Alert Banner -->
+  <aside class="vampire-banner-container" aria-label="Vampire Power Alert">
+    <div class="vampire-banner">
+      <div class="vampire-banner-content">
+        <span style="font-size: 1.3rem;">🧛‍♂️</span>
+        <div>
+          <span class="vampire-banner-title">Phantom / Vampire Power Alert:</span>
+          <span>Your home is wasting money on idle appliances in standby.</span>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 0.825rem; font-weight: 600;">Simulate Kill Switch:</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="vampire-kill-switch" aria-label="Toggle Vampire Kill Switch">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="../index.html" class="brand-group">
+        <div class="brand-icon-wrapper">⚡</div>
+        <div>
+          <div class="brand-title">WattWise Home</div>
+          <div class="brand-subtitle">Live Power Dashboard</div>
+        </div>
+      </a>
+
+      <!-- Subpage Navigation -->
+      <nav class="nav-tabs" role="tablist">
+        <a href="dashboard.html" class="nav-tab-btn active"><span>📊</span> Dashboard</a>
+        <a href="appliances.html" class="nav-tab-btn"><span>🔌</span> Appliances</a>
+        <a href="calculator.html" class="nav-tab-btn"><span>💰</span> What-If Savings</a>
+        <a href="analytics.html" class="nav-tab-btn"><span>📈</span> Analytics & Solar</a>
+        <a href="report.html" class="nav-tab-btn"><span>📄</span> Audit Report</a>
+      </nav>
+
+      <div class="header-actions">
+        <select id="preset-select" class="form-control" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.8rem;">
+          <option value="" disabled selected>Preset Profiles...</option>
+          <option value="apartment">🏢 1-BHK Studio</option>
+          <option value="family">🏡 3-BHK Family Home</option>
+          <option value="heavy">⚡ High-Load Villa</option>
+        </select>
+        <button id="theme-toggle" class="btn-icon" title="Toggle Dark/Light Mode">☀️</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <div class="section-header">
+      <div>
+        <h1 class="section-title">Household Energy Command Center</h1>
+        <p class="section-subtitle">Real-time load telemetry, phantom waste spotter, and monthly bill forecast.</p>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button id="btn-spike-test" class="btn btn-secondary btn-sm">⚡ Simulate Appliance Spike</button>
+        <a href="appliances.html" class="btn btn-primary btn-sm">+ Manage Appliances</a>
+      </div>
+    </div>
+
+    <!-- KPI Summary Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-card-highlight">
+        <div class="kpi-header">
+          <span class="kpi-title">Projected Electric Bill</span>
+          <span class="kpi-icon">💵</span>
+        </div>
+        <div class="kpi-value" id="kpi-monthly-bill">$0.00</div>
+        <div class="kpi-subtext" id="kpi-monthly-kwh">0.0 kWh/mo</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-title">Daily Consumption</span>
+          <span class="kpi-icon">⚡</span>
+        </div>
+        <div class="kpi-value" id="kpi-daily-kwh">0.00 kWh</div>
+        <div class="kpi-subtext" id="kpi-daily-cost">$0.00 / day</div>
+      </div>
+
+      <div class="kpi-card kpi-card-vampire">
+        <div class="kpi-header">
+          <span class="kpi-title">Phantom Vampire Draw</span>
+          <span class="kpi-icon">🧛‍♂️</span>
+        </div>
+        <div class="kpi-value" id="kpi-vampire-watts" style="color: #c084fc;">0 W</div>
+        <div class="kpi-subtext">
+          <span id="kpi-vampire-cost" style="color: #f43f5e; font-weight: 600;">$0.00/yr</span>
+          <span id="kpi-vampire-pct" class="text-muted">(0% of bill)</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-card-grade">
+        <div class="kpi-header">
+          <span class="kpi-title">Efficiency Rating</span>
+          <span class="kpi-icon">🏅</span>
+        </div>
+        <div class="grade-display">
+          <div id="kpi-grade-badge" class="grade-badge-circle" style="background: #10b981;">A</div>
+          <div class="grade-details-col">
+            <span id="kpi-grade-label" class="grade-label">Exceptional</span>
+            <span id="kpi-grade-desc" class="grade-desc">Optimal load balance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Smart Meter Telemetry Row -->
+    <div class="telemetry-row">
+      <div class="telemetry-card">
+        <div class="telemetry-header">
+          <div class="telemetry-title-group">
+            <h3>Smart Meter Dial</h3>
+            <p>Instantaneous power draw</p>
+          </div>
+          <span id="live-meter-status" class="status-pill status-normal">🟢 Normal Baseline</span>
+        </div>
+        <div class="gauge-box">
+          <canvas id="live-gauge-canvas" width="280" height="180"></canvas>
+        </div>
+        <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+          Connected Total Capacity: <strong id="kpi-connected-load">0 kW</strong> (<span id="kpi-active-appliances">0 active</span>)
+        </div>
+      </div>
+
+      <div class="telemetry-card">
+        <div class="telemetry-header">
+          <div class="telemetry-title-group">
+            <h3>Live Household Wattage Waveform</h3>
+            <p>Simulating real-time telemetry fluctuations & compressor cycles</p>
+          </div>
+          <div style="font-family: monospace; font-size: 0.95rem; font-weight: 700; color: #38bdf8;" id="live-meter-watts">
+            -- W
+          </div>
+        </div>
+        <div class="stream-box">
+          <canvas id="live-power-stream-canvas" width="800" height="200"></canvas>
+          <div class="stream-watermark">1.5s SAMPLE INTERVAL</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Breakdown Row -->
+    <div class="analytics-grid-row">
+      <div class="telemetry-card">
+        <div class="telemetry-header">
+          <div class="telemetry-title-group">
+            <h3>Appliance Energy Share</h3>
+            <p>Monthly kWh distribution</p>
+          </div>
+        </div>
+        <div class="donut-chart-container">
+          <canvas id="dashboard-donut-canvas" width="240" height="240"></canvas>
+        </div>
+      </div>
+
+      <div class="telemetry-card">
+        <div class="telemetry-header">
+          <div class="telemetry-title-group">
+            <h3>Room-by-Room Consumption</h3>
+            <p>Identify where energy is spent</p>
+          </div>
+        </div>
+        <div id="room-bar-container" style="padding-top: 0.5rem;"></div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top: 2rem;">
+      <div>
+        <h2 class="section-title">Top Savings Recommendations For Your Home</h2>
+        <p class="section-subtitle">Based on your highest consuming appliances and standby draws.</p>
+      </div>
+    </div>
+    <div id="saving-tips-container" class="tips-grid"></div>
+  </main>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div><strong>WattWise Home</strong> — Power & Appliance Monitor</div>
+      <div class="footer-links">
+        <a href="../index.html">Main App</a>
+        <a href="appliances.html">Appliances</a>
+        <a href="calculator.html">What-If Calculator</a>
+        <a href="analytics.html">Solar Sizing</a>
+        <a href="report.html">Print Report</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/storage.js"></script>
+  <script src="../js/calculator.js"></script>
+  <script src="../js/charts.js"></script>
+  <script src="../js/simulator.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>
